@@ -85,17 +85,17 @@ public class BoxPlot extends ApplicationFrame {
         
         final DefaultBoxAndWhiskerCategoryDataset dataset = new DefaultBoxAndWhiskerCategoryDataset();
         
-        for (int i = 0; i < linkedList.get(i).size(); i++) {
+       // for (int i = 0; i < linkedList.get(i).size(); i++) {
            
-            for (int j = 0; j < categoryCount; j++) {
+            for (int i = 0; i < categoryCount; i++) {
             	final List list = linkedList.get(i);
                 list.sort(Comparator.naturalOrder());
                 LOGGER.debug("Adding series " + i);
                 LOGGER.debug(list.toString());
-                dataset.add(list, "Series " + i, " Type " + j);
+                dataset.add(list, "Series " + i, " Type " + (i+3));
             }
             
-        }
+       // }
 
         return dataset;
     }

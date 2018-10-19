@@ -72,7 +72,7 @@ public class controller1 implements Initializable{
 	@FXML
 	ListView<String> listView;
 	FileChooser fileC;
-	public static LinkedList<LinkedList<Double>> linkedList;
+	public static LinkedList<LinkedList<String>> linkedList;
 	
 
 	
@@ -97,14 +97,14 @@ public class controller1 implements Initializable{
 				Bq1.setText(String.valueOf(calQ1(vecteur)));
 				Bq3.setText(String.valueOf(calQ3(vecteur)));
 				Bmean.setText(Double.toString(inst.meanOrMode(inst.attribute(k))));
-				//Bmean.setText(String.valueOf(calMean(vecteur)));
 				Bmin.setText(Double.toString(inst.attributeStats(k).numericStats.min));
 				Bmax.setText(Double.toString(inst.attributeStats(k).numericStats.max));
-				new Thread(()->{
-					Platform.runLater(() -> barChartAttribute(k));
 
-				}).start();
 			}
+			new Thread(()->{
+				Platform.runLater(() -> barChartAttribute(k));
+
+			}).start();
 			Platform.runLater(() -> barChartAttribute(k));
 
 		
@@ -183,43 +183,48 @@ public class controller1 implements Initializable{
 
 	}
 	
+	
+	
+	
 	public void tableData(String path) throws Exception {
+		tableAttributes.getColumns().clear();
+		tableInstance.getColumns().clear();
+		
 		
 		
 		 atts = FXCollections.observableArrayList();
 		 dataInstance= FXCollections.observableArrayList();
 		 dataAttribute= FXCollections.observableArrayList();
 		
-		 //AttChooser= new ChoiceBox<>();
 		 DataSource p= new DataSource(path);
 		 inst = p.getDataSet();
 		 System.out.println("kakaaaaaaaaaaaaa");
 		 System.out.println(inst.instance(1).value(1));
-		 linkedList = new LinkedList<LinkedList<Double>>();
+		 
+		 linkedList = new LinkedList<LinkedList<String>>();
 		 for(int i=0; i<inst.numAttributes(); i++) {
-			 linkedList.add(new LinkedList<Double>());
+			 linkedList.add(new LinkedList<String>());
 			 for(int j=0; j<inst.numInstances(); j++) {
-				if(inst.attribute(i).isNumeric())
-					linkedList.get(i).add((inst.instance(j).value(i)));
+				if((inst.attribute(i).isNumeric())&&(!inst.attribute(i).isDate())) {
+					String strAttr = Double.toString(inst.instance(j).value(i));
+					linkedList.get(i).add(strAttr);
+				}
+				else {
+					if((inst.attribute(i).isNominal())&&(!inst.attribute(i).isDate()))
+						linkedList.get(i).add(inst.instance(j).stringValue(i));
+
+				}
 			 }
-			 //linkedList.add(hashData);
 			System.out.println(Arrays.asList(linkedList.get(i)));
 		 }
-		 
-		 
-		// BoxPlot boxPlot = new BoxPlot("Box Plot",inst);
-	       // boxPlot.pack();
-	        //RefineryUtilities.centerFrameOnScreen(boxPlot);
-	        //boxPlot.setVisible(true);
+
 		 int cpt = 0;
 		 
 		 nbrInst.setText(""+inst.numInstances());
 		 int c = inst.numAttributes();
 		 relation.setText(""+inst.relationName());
 		 nbrAttr.setText(""+c);
-		 
-		 //System.out.println(inst.numInstances());
-		 
+		 		 
 		 TableColumn<instances, String> colonne1 = new TableColumn<instances,String>("Num");
 		 colonne1.setCellValueFactory(new PropertyValueFactory<instances, String>("numAttr"));
 		 TableColumn<instances, String> colonne2 = new TableColumn<instances, String>("Instance");
@@ -239,10 +244,6 @@ public class controller1 implements Initializable{
 		
 		tableInstance.setItems(dataInstance);
 		
-
-		/**********************************************************
-		 * table attribut
-		 */
 		 TableColumn<attribut, String> colonne3 = new TableColumn<attribut, String>("Num");
 		 colonne3.setCellValueFactory(new PropertyValueFactory<attribut, String>("numAttr"));
 		 TableColumn<attribut, String> colonne4 = new TableColumn<attribut, String>("Nom");
@@ -260,7 +261,6 @@ public class controller1 implements Initializable{
 			String[] splitAttr = inst.attribute(cpt1).toString().split(" ", 3);
 			dataAttribute.add(new attribut(Integer.toString(cpt1+1), splitAttr[1], splitAttr[2]));
 			cpt1++;
-			//System.out.println("Display Atts");
 			int k=0;
 			
 			for (int i=1;i<splitAttr.length;i=i+2)
@@ -273,15 +273,9 @@ public class controller1 implements Initializable{
 			
 		}
 		
-	//atts.remove(atts.size()-1);
 		AttChooser.getItems().setAll(atts);
-		 //  AttChooser.getItems().addAll(atts);
-			tableAttributes.setItems(dataAttribute);
-			/*System.out.println("Les types des attributs:");
-			System.out.println(inst.attribute(1));
-			System.out.println(inst.attribute(2));
-			System.out.println(inst.attribute(3));
-			System.out.println(inst.attribute(4));*/
+		tableAttributes.setItems(dataAttribute);
+
 			
 		 
 	}
@@ -289,9 +283,9 @@ public class controller1 implements Initializable{
 	public HashMap<String, Integer> calculateFreqAttributes(int numAttr){
 		HashMap<String, Integer> hashMap = new HashMap<String, Integer>();
 
-		//A revoir demain nchallah 
 		for(int i=0; i<linkedList.get(numAttr).size(); i++) {
-			String key = Double.toString(linkedList.get(numAttr).get(i));
+			
+			String key = linkedList.get(numAttr).get(i);
 			if(hashMap.containsKey(key)) {
 				System.out.println("rymaaa");
 				int tmp = hashMap.get(key);
@@ -300,7 +294,7 @@ public class controller1 implements Initializable{
 			}
 			else {
 				System.out.println("izaan");
-				String strAttr =Double.toString(linkedList.get(numAttr).get(i));
+				String strAttr =linkedList.get(numAttr).get(i);
 				hashMap.put(strAttr, 1);
 			}
 		}
@@ -330,7 +324,7 @@ public class controller1 implements Initializable{
 		 for (String key:newHash.keySet()){
             System.out.println("Key:" + key +" Value:" + newHash.get(key));// Get Key and value 
              
- 			if(x<8) {series.getData().add(new XYChart.Data(key, newHash.get(key))); x++;}
+ 				series.getData().add(new XYChart.Data(key, newHash.get(key)));
 
         }
 
