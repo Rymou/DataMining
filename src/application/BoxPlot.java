@@ -92,7 +92,7 @@ public class BoxPlot extends ApplicationFrame {
                 list.sort(Comparator.naturalOrder());
                 LOGGER.debug("Adding series " + i);
                 LOGGER.debug(list.toString());
-                dataset.add(list, "Series " + i, " Type " + (i+3));
+                dataset.add(list, "Series " + i, " Type " + (i+1));
             }
             
        // }

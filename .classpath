@@ -5,5 +5,7 @@
 	<classpathentry kind="lib" path="C:/Program Files/Weka-3-8/weka.jar"/>
 	<classpathentry kind="lib" path="C:/Program Files/Weka-3-8/weka-src.jar"/>
 	<classpathentry kind="lib" path="C:/Users/USER/Documents/Master2/DataMining/jfreechart-1.0.19/jfreechart-1.0.19-demo.jar"/>
+	<classpathentry kind="lib" path="C:/Users/USER/Documents/Master2/DataMining/TPs/engine.jar"/>
+	<classpathentry kind="lib" path="C:/Users/USER/Documents/Master2/DataMining/TPs/matlabcontrol-4.1.0.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
