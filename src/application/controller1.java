@@ -184,6 +184,36 @@ public class controller1 implements Initializable{
 	}
 	
 	
+	public Instances missingValue(Instances inst) throws Exception {
+		//this is the first solution *-*
+		/*ReplaceMissingValues m_valuesFilter =new ReplaceMissingValues();
+		m_valuesFilter.setInputFormat(inst);
+		Filter.useFilter(inst,m_valuesFilter);
+		return inst;*/
+		//this is the second its gonna be looooooooong 
+		for(int i=0; i<inst.numInstances(); i++) {
+			 for(int j=0; j<inst.numAttributes(); j++) {
+				 if(inst.attribute(j).isNumeric()) {
+				if( Double.toString(inst.instance(i).value(j)).contentEquals("NaN") )
+				{
+					inst.instance(i).setValue(j, inst.meanOrMode(inst.attribute(j)));
+				}
+					}
+				 if(inst.attribute(j).isNominal())
+					 {
+					 if(inst.instance(i).stringValue(j).contentEquals("?")) {
+						 inst.instance(i).setValue(j, inst.meanOrMode(inst.attribute(j)));
+					 }
+					 }
+				 
+			 }
+			 //linkedList.add(hashData);
+			//System.out.println(Arrays.asList(linkedList.get(i)));
+		 }
+		return inst;
+	}
+	
+	
 	
 	
 	public void tableData(String path) throws Exception {
@@ -198,6 +228,8 @@ public class controller1 implements Initializable{
 		
 		 DataSource p= new DataSource(path);
 		 inst = p.getDataSet();
+		 inst=missingValue(inst);
+
 		 System.out.println("kakaaaaaaaaaaaaa");
 		 System.out.println(inst.instance(1).value(1));
 		 
