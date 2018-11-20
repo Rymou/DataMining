@@ -6,12 +6,15 @@ import java.net.URL;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Set;
+import java.util.Vector;
 
 import org.jfree.ui.RefineryUtilities;
 
@@ -28,6 +31,7 @@ import javafx.scene.chart.BarChart;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceBox;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TableColumn;
@@ -47,6 +51,7 @@ import weka.core.converters.ConverterUtils.DataSource;
 
 public class controller1 implements Initializable{
 
+	static int typeAttribute; // 0=numerique 1=nominal
 	ObservableList<String> atts;
 	@FXML
 	Button ouvrir;
@@ -58,13 +63,15 @@ public class controller1 implements Initializable{
 	@FXML
 	ChoiceBox<String> AttChooser;
 	@FXML
+	ComboBox<String> filtres;
+	@FXML
 	TableView<attribut> tableAttributes;
 	ObservableList<attribut> dataAttribute ;
 
 	@FXML
 	TextArea textArea;
 	@FXML
-	TextField Bq1,Bq3,Bmax,Bmin,Bmean, mode, mediane;
+	TextField Bq1,Bq3,Bmax,Bmin,Bmean, mode, mediane, midRange, symetrie;
 	@FXML
 	private BarChart<?, ?> barChart;
 	@FXML
@@ -80,12 +87,17 @@ public class controller1 implements Initializable{
 	DecimalFormat df = new DecimalFormat("#.##");
 
 	public static LinkedList<LinkedList<String>> linkedList;
+	static int filtreChoix;
 	
 
 	
 	@Override
 	public void initialize(URL arg0, ResourceBundle arg1) {
-
+		this.filtres.getItems().addAll(
+				"Aucun",
+				"Normalisation et missing values"
+				);
+		filtres.setPromptText("Choisir un filtre");
 	}
 	
 	public Instances normalization(Instances inst) {
@@ -105,82 +117,16 @@ public class controller1 implements Initializable{
 		}
 	
 	
-	public void matlabPlots(Instances i) throws MatlabInvocationException, MatlabConnectionException {
-		//matlabPlots(i);
-		
-		 MatlabProxyFactory factory = new MatlabProxyFactory();
-		 MatlabProxy proxy = factory.getProxy();
-		 int q=0;
-		 int cpt=0;
-		 while (q<i.numAttributes() )
-		 {cpt=0;
-		 proxy.eval( "state={};");		 
-
-		 if (i.attribute(q).isNominal() && !(i.attribute(q).isDate())  )
-			{
-		 		while (cpt<i.size())
-		 			{
-			 			proxy.eval( "state(end+1)={'"+i.instance(cpt).stringValue(q)+"'};");
-			 			cpt++;
-			 		}
-		 		proxy.eval( "state = categorical(state);");
-				proxy.eval( "hist(state)" );
-				proxy.eval( "saveas(gcf,'fig"+q+".png');" );
-			 }
-
-		 if (i.attribute(q).isNumeric() && !(i.attribute(q).isDate())  )
-			{
-		 		while (cpt<i.size())
-		 			{
-			 			proxy.eval( "state(end+1)={'"+i.instance(cpt).value(q)+"'};");
-			 			cpt++;
-			 		}
-		 		proxy.eval( "state = categorical(state);");
-				proxy.eval( "h=pie(state)" );
-		 		proxy.eval( "set(findobj(h,'type','text'),'fontsize',6);");
-		 		proxy.eval( " H=findobj(gca,'Type','text');\r\n" + 
-		 				" set(H,'Rotation',60); % tilt");
-				proxy.eval( "saveas(gcf,'fig"+q+".png');" );
-			 }
-		 
-		 
-			q++;
-		 }
-			 	
-		 //boxplot
-		 cpt=0;q=0;
-			proxy.eval( "f= zeros("+i.size()+","+i.numAttributes()+")");
-				while (q<i.numAttributes() )
-				 {cpt=0;
-				 
-				 if (i.attribute(q).isNumeric() && !(i.attribute(q).isDate())  )
-					{
-				 	while (cpt<i.size())
-				 		{
-						proxy.eval( "f("+(cpt+1)+","+(q+1)+")="+i.instance(cpt).value(q)+";\r\n");
-						cpt++;
-				 		}
-					}
-				 	q++;
-				 }
-				proxy.eval( "boxplot(f);");
-				proxy.eval( "saveas(gcf,'figure.png');" );
-				proxy.eval( "quit;" );
-	}
-			
-	
-	
 	
 	public void choice(ActionEvent event)throws Exception {
+
 		String s=AttChooser.getValue();
 		int k=atts.indexOf(s);
-			if(inst.attribute(k).isNumeric()){
-				double [] vecteur;
-				vecteur = new double [inst.size()];
+			if(inst.attribute(k).isNumeric()&&(!inst.attribute(k).isDate())){
+				ArrayList<Double>  vecteur;
+				vecteur = new ArrayList<Double>();
 				for(int j=0;j<inst.size();j++){
-					vecteur[j]=inst.instance(j).value(k);
-					//System.out.println("vecteuruuuus");
-					//System.out.println(vecteur[j]);
+					vecteur.add(inst.instance(j).value(k));
 				}	
 				Bq1.clear();
 				Bq3.clear();
@@ -188,13 +134,30 @@ public class controller1 implements Initializable{
 				Bmin.clear();
 				Bmax.clear();
 				mode.clear();
-				vecteur = sort(vecteur,inst.size()); 
+				midRange.clear();
+				mediane.clear();
+				symetrie.clear();
+				vecteur.sort(Comparator.naturalOrder()); 
 				Bq1.setText(String.valueOf(calQ1(vecteur)));
 				Bq3.setText(String.valueOf(calQ3(vecteur)));
 				Bmean.setText(Double.toString(inst.meanOrMode(inst.attribute(k))));
 				Bmin.setText(Double.toString(inst.attributeStats(k).numericStats.min));
 				Bmax.setText(Double.toString(inst.attributeStats(k).numericStats.max));
 				mode.setText(Double.toString(inst.meanOrMode(inst.attribute(k))));
+				midRange.setText(String.valueOf(calMidR(vecteur)));
+				mediane.setText(String.valueOf(calMedian(vecteur)));
+				if((Math.abs(calMedian(vecteur)-(Math.abs(inst.meanOrMode(inst.attribute(k))))))<=0.1) {
+					if((Math.abs(inst.meanOrMode(inst.attribute(k)))-Math.abs(inst.meanOrMode(inst.attribute(k))))<=0.1) 
+					 {
+						symetrie.setText("Vrai");
+						
+					}
+					else
+						symetrie.setText("Faux");
+				}
+				else
+					symetrie.setText("Faux");
+						
 				
 
 			}
@@ -206,6 +169,8 @@ public class controller1 implements Initializable{
 					Bmin.clear();
 					Bmax.clear();
 					mode.clear();
+					mediane.clear();
+					symetrie.clear();
 					
 					String [] vecteur;
 					vecteur = new String[inst.size()];
@@ -215,6 +180,20 @@ public class controller1 implements Initializable{
 					String name = inst.attribute(k).value( (int) (inst.meanOrMode(k)));
 					
 					mode.setText(name);
+					
+				}
+				else {
+					if((inst.attribute(k).isDate())){
+						Bq1.clear();
+						Bq3.clear();
+						Bmean.clear();
+						Bmin.clear();
+						Bmax.clear();
+						mode.clear();
+						mediane.clear();
+						symetrie.clear();
+					}
+						
 					
 				}
 			}
@@ -228,40 +207,61 @@ public class controller1 implements Initializable{
 		
 	}
 	
-	public double[] sort (double [] vecteur, int taille){
-		//double great = vecteur[0];
-		for(int tailleMax=taille;tailleMax>0;tailleMax--){
-			for(int i=1;i<tailleMax;i++){
-				if(vecteur[i-1]>vecteur[i]){
-					double stock=vecteur[i-1];
-					vecteur[i-1]= vecteur[i];
-					vecteur[i]=stock;
-				}
-			}
-		}
+	public double calQ1(ArrayList<Double> values) {
 
-		return vecteur;
+List<Double> l = new LinkedList<Double>();
+		l.addAll(values);
+		l.sort(Comparator.naturalOrder());
+		//values.sort(Comparator.naturalOrder());
+		return l.get(Math.round(l.size()/4));
 	}
-	public double calQ1(double[] values) {
-		return values[Math.round(values.length/4)];
+	public double calMedian(ArrayList<Double> values) {
+		LinkedList<Double> l = new LinkedList<Double>();
+		l.addAll(values);
+		l.sort(Comparator.naturalOrder());
+		System.out.println(l.toString());
+		return l.get(Math.round(l.size()/2));
 	}
-	public double calQ3(double[] values) {
-		return values[Math.round(values.length*3/4)];
+	public double calQ3(ArrayList<Double> values) {
+		//values.sort(Comparator.naturalOrder());
+		LinkedList<Double> l = new LinkedList<Double>();
+		l.addAll(values);
+		l.sort(Comparator.naturalOrder());
+		System.out.println(l.toString());
+		return l.get(Math.round(l.size()*3/4));
 	}
-	public double calMean(double[] values) {
-		return values[Math.round(values.length/2)];
+	public double calMean(ArrayList<Double> values) {
+		LinkedList<Double> l = new LinkedList<Double>();
+		l.addAll(values);
+		l.sort(Comparator.naturalOrder());
+		//values.sort(Comparator.naturalOrder());
+		return l.get(Math.round(l.size()/2));
 	}
-	public float Calmax(float[] values) {
-		float max=values[0];
-		for(int i=0;i<values.length;i++) {
-			if(max<values[i]) max=values[i];
+	
+	public double calMidR(ArrayList<Double> values) {
+		double midR = (Calmax(values)+Calmin(values))/2;
+		return midR;
+	}
+	public double Calmax(ArrayList<Double> values) {
+		LinkedList<Double> l = new LinkedList<Double>();
+		l.addAll(values);
+		l.sort(Comparator.naturalOrder());
+		
+		//values.sort(Comparator.naturalOrder());
+		Double max=l.get(0);
+		for(int i=0;i<l.size();i++) {
+			if(max<l.get(i)) max=l.get(i);
 		}
 		return max;
 	}
-	public float Calmin(float[] values) {
-		float min=values[0];
-		for(int i=0;i<values.length;i++) {
-			if(min>values[i]) min=values[i];
+	public Double Calmin(ArrayList<Double> values) {
+		LinkedList<Double> l = new LinkedList<Double>();
+		l.addAll(values);
+		l.sort(Comparator.naturalOrder());
+		//values.sort(Comparator.naturalOrder());
+		Double min=l.get(0);
+		for(int i=0;i<l.size();i++) {
+			if(min>l.get(i)) min=l.get(i);
 		}
 		return min;
 	}
@@ -274,8 +274,18 @@ public class controller1 implements Initializable{
 		Bq1.clear();
 		Bq3.clear();
 		mode.clear();
+		midRange.clear();
+		mediane.clear();
+		
 
 
+
+		filtres.getValue();
+		if(filtres.getValue().equals("Aucun"))
+			filtreChoix = 1;
+		if(filtres.getValue().equals("Normalisation et missing values"))
+			filtreChoix = 2;
+		
 		fileC.setInitialDirectory(new File("C:\\Program Files\\Weka-3-8\\data"));
 		fileC.getExtensionFilters().addAll(
 				new ExtensionFilter("ARFF files", "*.arff"));
@@ -283,19 +293,20 @@ public class controller1 implements Initializable{
 		if(selectedFile != null) {
 			textF.setText(selectedFile.getAbsolutePath());
 		}
-		
 
-	
+		
 		tableData(textF.getText());
 
+		
+		barChart.getData().clear();
 		tableInstance.refresh();
-		 tableAttributes.refresh();
+		tableAttributes.refresh();
 		  
 
 	}
 	
 	public void BouttonActionBoiteAMous(ActionEvent event) throws Exception {
-		 final BoxPlot demo = new BoxPlot("Boites à moustaches", textF.getText());
+		 final BoxPlot demo = new BoxPlot("Boites à moustaches", textF.getText(), filtreChoix);
 	     demo.pack();
 	     RefineryUtilities.centerFrameOnScreen(demo);
 	     demo.setVisible(true);
@@ -304,63 +315,153 @@ public class controller1 implements Initializable{
 	
 	
 	public Instances missingValue(Instances inst) throws Exception {
-		for(int i=0; i<inst.numInstances(); i++) {
-			 for(int j=0; j<inst.numAttributes(); j++) {
-				 if(inst.attribute(j).isNumeric()) {
-				if( Double.toString(inst.instance(i).value(j)).contentEquals("NaN") )
+		Vector<Integer> missingInstances=new Vector<Integer>();
+		Vector<String> classValue=new Vector<String>();
+
+		if(inst.attribute(inst.numAttributes()-1).isNumeric()) {
+			for(int i=0;i<inst.size();i++) {
+				if(!classValue.contains(Double.toString(inst.instance(i).value(inst.numAttributes()-1))))
 				{
-					inst.instance(i).setValue(j, inst.meanOrMode(inst.attribute(j)));
+					classValue.add(Double.toString(inst.instance(i).value(inst.numAttributes()-1)));
 				}
-					}
-				 if(inst.attribute(j).isNominal())
-					 {
-					 if(inst.instance(i).stringValue(j).contentEquals("?")) {
-						 inst.instance(i).setValue(j, inst.meanOrMode(inst.attribute(j)));
-					 }
-					 }
-				 
-			 }
-		 }
-		return inst;
-	}
+			}
+		}
+		if(inst.attribute(inst.numAttributes()-1).isNominal()) {
+			for(int i=0;i<inst.size();i++) {
+				if(!classValue.contains(inst.instance(i).stringValue(inst.numAttributes()-1)))
+				{
+					classValue.add((inst.instance(i).stringValue(inst.numAttributes()-1)));
+				}
+			}
+		}
 	
+		int j;
+		for(int at=0;at<inst.numAttributes();at++) {
+			for(int c=0;c<classValue.size();c++) {
+				boolean missing=false;
+				if(inst.attribute(inst.numAttributes()-1).isNominal())
+				{j=0;
+				while(!missing && j<inst.size() ) {
+					
+					if(inst.attribute(at).isNumeric() && Double.toString(inst.instance(j).value(at)).contentEquals("NaN") && inst.instance(j).stringValue(inst.numAttributes()-1).contentEquals(classValue.get(c)) )
+					{missing=true;}
+					if(inst.attribute(at).isNominal() && inst.instance(j).stringValue(at).contentEquals("?") && inst.instance(j).stringValue(inst.numAttributes()-1).contentEquals(classValue.get(c)) )
+					{missing=true;}
+					
+					
+						j++;
+				}
+				}
+				if(inst.attribute(inst.numAttributes()-1).isNumeric())
+				{j=0;
+				while(!missing && j<inst.size() ) {
+					
+					if(inst.attribute(at).isNumeric() && Double.toString(inst.instance(j).value(at)).contentEquals("NaN") && Double.toString(inst.instance(j).value(inst.numAttributes()-1)).contentEquals(classValue.get(c)) )
+					{missing=true;}
+					if(inst.attribute(at).isNominal() && inst.instance(j).stringValue(at).contentEquals("?") && Double.toString(inst.instance(j).value(inst.numAttributes()-1)).contentEquals(classValue.get(c)) )
+					{missing=true;}
+					
+					
+						j++;
+				}
+				}
+				if(missing) {
+					if(inst.attribute(at).isNumeric()) {
+						double moyenne=0;
+						int totale=0;
+						for(int i =0;i<inst.size();i++) {
+							if(!Double.toString(inst.instance(i).value(at)).contentEquals("NaN") && inst.instance(i).stringValue(inst.numAttributes()-1).contentEquals(classValue.get(c)))
+							{   moyenne+=inst.instance(i).value(at);
+								totale = totale+1;
+							}
+						}
+						moyenne=moyenne/totale;
+						for(int i =0;i<inst.size();i++) {
+							if(Double.toString(inst.instance(i).value(at)).contentEquals("NaN") && inst.instance(i).stringValue(inst.numAttributes()-1).contentEquals(classValue.get(c)))
+							{   
+								inst.instance(i).setValue(at,moyenne);
+							}
+						}
+						
+					}
+					if(inst.attribute(at).isNominal()) {
+						HashMap<String, Integer> hashMap = new HashMap<String, Integer>();
+						int maxcount=0;
+						String maxAttr=null;
+						
+						for(int i=0; i<inst.size(); i++) {
+							String key = inst.instance(i).stringValue(at);
+							if(hashMap.containsKey(key) && inst.instance(i).stringValue(inst.numAttributes()-1).contentEquals(classValue.get(c))) {
+								int tmp = hashMap.get(key);
+								hashMap.put(key, tmp+1);
+								
+							}
+							else {
+								if(!inst.instance(i).stringValue(at).equals("?"))
+								{String strAttr =inst.instance(i).stringValue(at);
+								hashMap.put(strAttr, 1);}
+							}
+						}
+						 for (String key:hashMap.keySet()){
+				             //System.out.println("Key:" + key +" Value:" + hashMap.get(key));// Get Key and value 
+				             if(maxcount<hashMap.get(key)) {
+				            	 maxcount=hashMap.get(key);
+				            	 maxAttr=key;
+				             }
+				 			
+
+				        }
+						for(int k=0;k<inst.size();k++){ //remplacer les valeurs manquantes
+							if(inst.instance(k).stringValue(at).contentEquals("?") && inst.instance(k).stringValue(inst.numAttributes()-1).contentEquals(classValue.get(c)))
+								
+								inst.instance(k).setValue(at, maxAttr);
+						}
+					
+					}
+					}
+					
+					
+				}
+				
+			}
+		return inst;
+		}
 	
 	
 	
 	public void tableData(String path) throws Exception {
 		tableAttributes.getColumns().clear();
 		tableInstance.getColumns().clear();
-		
-		
-		
+	
 		 atts = FXCollections.observableArrayList();
 		 dataInstance= FXCollections.observableArrayList();
 		 dataAttribute= FXCollections.observableArrayList();
 		
 		 DataSource p= new DataSource(path);
 		 inst = p.getDataSet();
-		 inst = missingValue(inst);
-		 inst = normalization(inst);
-
-//		 System.out.println(inst.instance(1).value(1));
-		 
+		 if(filtreChoix==2) {
+			 inst = missingValue(inst);
+			 inst = normalization(inst);
+		 }		 
 		 linkedList = new LinkedList<LinkedList<String>>();
 		 for(int i=0; i<inst.numAttributes(); i++) {
 			 linkedList.add(new LinkedList<String>());
 			 for(int j=0; j<inst.numInstances(); j++) {
 				if((inst.attribute(i).isNumeric())&&(!inst.attribute(i).isDate())) {
+					typeAttribute = 0;
 					String d = df.format(inst.instance(j).value(i));
-					System.out.println("DMMMMMMMMM");
-					System.out.println(d);
+					//System.out.println("DMMMMMMMMM");
+					//System.out.println(d);
 					linkedList.get(i).add(d);
 				}
 				else {
+					typeAttribute = 1;
 					if((inst.attribute(i).isNominal())&&(!inst.attribute(i).isDate()))
 						linkedList.get(i).add(inst.instance(j).stringValue(i));
 
 				}
 			 }
-			System.out.println(Arrays.asList(linkedList.get(i)));
+			//System.out.println(Arrays.asList(linkedList.get(i)));
 		 }
 
 		 int cpt = 0;
@@ -421,12 +522,8 @@ public class controller1 implements Initializable{
 		AttChooser.getItems().setAll(atts);
 		tableAttributes.setItems(dataAttribute);
 		
-		//matlabPlots(inst);
-
-			
-		 
 	}
-	
+	//Seulement pour les attributs nominaux
 	public HashMap<String, Integer> calculateFreqAttributes(int numAttr){
 		HashMap<String, Integer> hashMap = new HashMap<String, Integer>();
 
@@ -459,23 +556,58 @@ public class controller1 implements Initializable{
 	}
 	
 	
+	public ArrayList<Double> diviserAttribute(int numAttr, ArrayList<Double> array) {
+		array.sort(Comparator.naturalOrder());
+		ArrayList<Double> a = new ArrayList<Double>();
+		
+		a.add((double) (array.indexOf((calQ1(array)))));
+		a.add((double) ((array.indexOf(calMean(array)))-(array.indexOf(calQ1(array)))+1));
+		a.add((double) ((array.indexOf(calQ3(array)))-(array.indexOf(calMean(array)))+1));
+		a.add((double) ((array.indexOf(Calmax(array)))-(array.indexOf(calQ3(array)))+1));
+		return a;
+		
+	}
+	
 	public void barChartAttribute(int numAttr) {
 		barChart.getData().clear();
 		XYChart.Series series = new XYChart.Series();
+		int type=0;
 		
 		HashMap<String, Integer> newHash = new HashMap<String, Integer>();
-		newHash = calculateFreqAttributes(numAttr);
-		int x=0;
+		ArrayList<Double> array = new ArrayList<Double>();
+
+			 for(int j=0; j<inst.numInstances(); j++) {
+				if((inst.attribute(numAttr).isNumeric())&&(!inst.attribute(numAttr).isDate())) {
+					type = 0;
+					array.add(inst.instance(j).value(numAttr));
+				}
+				else {
+					type = 1;
+
+					}
+				}
 		
-		 for (String key:newHash.keySet()){
-            System.out.println("Key:" + key +" Value:" + newHash.get(key));// Get Key and value 
-             	
- 				series.getData().add(new XYChart.Data(key, newHash.get(key)));
+		if(type == 0) {
+			//numérique 
+			//System.out.println("c'est un double "+array.get(0).getClass().getSimpleName()+"   == "+array.get(0));
+			ArrayList<Double> ar = new ArrayList<Double>();
+			ar = diviserAttribute(numAttr, array);
+			series.getData().add(new XYChart.Data("Min-Q1", ar.get(0)));
+	 		series.getData().add(new XYChart.Data("Q1-Médiane", ar.get(1)));
+	 		series.getData().add(new XYChart.Data("Médiane-Q3", ar.get(2)));
+	 		series.getData().add(new XYChart.Data("Q3-Max", ar.get(3)));
+	 		
+		}
+		else {
+			newHash = calculateFreqAttributes(numAttr);
+			for (String key:newHash.keySet()){
+	            //System.out.println("Key:" + key +" Value:" + newHash.get(key));// Get Key and value 
+	             	
+	 				series.getData().add(new XYChart.Data(key, newHash.get(key)));
 
-        }
-
+	        }
+		}
 		barChart.getData().add(series);
-
 	}
 
 }

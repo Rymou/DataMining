@@ -34,36 +34,10 @@ public class Apriori {
 			_transactions.add(transaction);
 		}
 		
-		
-		
-			
-
-		
-		
-		// Get input
-		/*Scanner terminal = new Scanner(System.in);
-		System.out.print("Number of transactions: ");
-		int numberOfTransactions = Integer.parseInt(terminal.nextLine());
-		System.out.println("Enter transactions separated by new line and items separated by spaces:");
-
-		ArrayList<ArrayList<String>> transactions = new ArrayList<ArrayList<String>>();
-		ArrayList<ArrayList<String>> _transactions = new ArrayList<ArrayList<String>>();
-
-		ArrayList<ArrayList<String>> prevItemSetsWithMinSupportCount = new ArrayList<ArrayList<String>>();
-
-		for (int i = 0; i < numberOfTransactions; i++) {
-			ArrayList<String> transaction = new ArrayList<String>();
-			String str = terminal.nextLine();
-			String arr[] = str.split(" ");
-			for (int j = 0; j < arr.length; j++) transaction.add(arr[j]);
-			transactions.add(transaction);
-			_transactions.add(transaction);
-		}
-*/
 				
 		ArrayList<String> items = getUniqueItems(transactions);
 
-		int x = 0; // x is the number of elements in the item-sets to consider
+		int x = 0; 
 		while (true) {
 
 			//Ajouter un itemSet de plus que l'ancienne itération
@@ -245,29 +219,43 @@ public class Apriori {
 	
 	public static void rulesAssociations(controller2 control, ArrayList<ArrayList<String>> itemSets) {
 		System.out.println("Les règles d'associations sont :");
+		int[] partieGauche;
+		int[] partieDroite;
 		for(int i=0; i<itemSets.size(); i++) {
 			//ArrayList<String> r = new ArrayList<String>();
 			//System.out.print("Règle : ");
 			String itemGauche = "";
+			int c = 1;
+			partieGauche = new int[10];
+			partieDroite = new int[10];
+
 			for(int j=0; j<itemSets.get(i).size(); j++) {
 				String item1 = itemSets.get(i).get(j);
+				String temp = "";
+				
+				
 				for(int k=0; k<itemSets.get(i).size(); k++) {
 					if(k!=j) {
+						temp = temp + " " + itemSets.get(i).get(k);
 						//System.out.println(item1+" ==> "+itemSets.get(i).get(k));
 						rules.add(item1+" ==> "+itemSets.get(i).get(k));
 					}
+					
 				
 				}
+				rules.add(item1+" ==> "+temp);
 				itemGauche = itemGauche + itemSets.get(i).get(j) + " ";
 				String itemDroit = "";
 				//System.out.println(itemGauche);
-				for(int k1=j+1; k1<itemSets.get(i).size(); k1++) {
+				for(int k1=j+c; k1<itemSets.get(i).size(); k1++) {
 					itemDroit = itemDroit + itemSets.get(i).get(k1) + " ";
 					//System.out.println("itemDroit = "+itemDroit);
+					//c++;
 				}
+				//c++;
 				if(j<itemSets.get(i).size()-1) {
 					//System.out.println(itemGauche+" ==> "+itemDroit);
-					rules.add(itemGauche+" ==> "+itemDroit);
+					//rules.add(itemGauche+" ==> "+itemDroit);
 				}
 				
 				}
@@ -278,5 +266,5 @@ public class Apriori {
 			control.dataRules.add(new rules(Integer.toString(i+1), rules.get(i)));
 		}
 		
-
+	}
 }

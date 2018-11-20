@@ -13,8 +13,7 @@ public class myMain extends Application{
 	@Override
 	public void start(Stage primaryStage) throws Exception {
 		FXMLLoader loader = new FXMLLoader();
-		Pane anc = (Pane) FXMLLoader.load(myMain.class.getResource("fich1.fxml"));
-		//mainLayout = loader.load();
+		Pane anc = (Pane) FXMLLoader.load(myMain.class.getResource("principal.fxml"));
 		Scene scene = new Scene(anc);
        primaryStage.setTitle("DataMining");
 
