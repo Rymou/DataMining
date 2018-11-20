@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.text.*?>
 <?import javafx.scene.chart.*?>
 <?import java.lang.*?>
 <?import javafx.scene.control.*?>
@@ -13,9 +14,9 @@
 
 <Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="562.0" prefWidth="1191.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.controller1">
    <children>
-      <Button fx:id="ouvrir" layoutX="918.0" layoutY="40.0" mnemonicParsing="false" onAction="#Boutton1Action" prefHeight="25.0" prefWidth="111.0" text="Ouvrir" />
-      <TableView fx:id="tableInstance" layoutX="66.0" layoutY="95.0" prefHeight="371.0" prefWidth="313.0" />
-      <TextField fx:id="textF" layoutX="392.0" layoutY="35.0" prefHeight="36.0" prefWidth="441.0" />
+      <Button fx:id="ouvrir" layoutX="1009.0" layoutY="40.0" mnemonicParsing="false" onAction="#Boutton1Action" prefHeight="25.0" prefWidth="111.0" text="Ouvrir" />
+      <TableView fx:id="tableInstance" layoutX="28.0" layoutY="95.0" prefHeight="371.0" prefWidth="351.0" />
+      <TextField fx:id="textF" layoutX="516.0" layoutY="35.0" prefHeight="36.0" prefWidth="441.0" />
       <Label layoutX="417.0" layoutY="95.0" prefHeight="25.0" prefWidth="127.0" text="Nombre d'attributs : " />
       <Label layoutX="417.0" layoutY="139.0" prefHeight="25.0" prefWidth="119.0" text="Nombre d'instances : " />
       <Label fx:id="nbrAttr" layoutX="530.0" layoutY="95.0" prefHeight="25.0" prefWidth="55.0" />
@@ -33,8 +34,8 @@
       <Label fx:id="q1" layoutX="291.0" layoutY="531.0" text="Q1" />
       <Label fx:id="mean" layoutX="206.0" layoutY="531.0" prefHeight="17.0" prefWidth="56.0" text="Moyenne" />
       <Label fx:id="min" layoutX="147.0" layoutY="531.0" text="Min" />
-      <ChoiceBox fx:id="AttChooser" layoutX="516.0" layoutY="490.0" onAction="#choice" prefWidth="150.0" />
-      <BarChart fx:id="barChart" layoutX="677.0" layoutY="95.0">
+      <ChoiceBox fx:id="AttChooser" layoutX="837.0" layoutY="490.0" onAction="#choice" prefWidth="150.0" />
+      <BarChart fx:id="barChart" layoutX="696.0" layoutY="81.0">
         <xAxis>
           <CategoryAxis side="BOTTOM" />
         </xAxis>
@@ -42,8 +43,15 @@
           <NumberAxis side="LEFT" />
         </yAxis>
       </BarChart>
-      <Button fx:id="boiteAMous" layoutX="140.0" layoutY="41.0" mnemonicParsing="false" onAction="#BouttonActionBoiteAMous" prefHeight="25.0" prefWidth="166.0" text="Boites à moustaches" />
+      <Button fx:id="boiteAMous" layoutX="334.0" layoutY="40.0" mnemonicParsing="false" onAction="#BouttonActionBoiteAMous" prefHeight="25.0" prefWidth="166.0" text="Boites à moustaches" />
       <TextField fx:id="mode" layoutX="417.0" layoutY="490.0" prefHeight="25.0" prefWidth="74.0" />
       <Label layoutX="434.0" layoutY="531.0" prefHeight="17.0" prefWidth="41.0" text="Mode" />
+      <ComboBox fx:id="filtres" layoutX="64.0" layoutY="40.0" prefHeight="25.0" prefWidth="224.0" />
+      <TextField fx:id="midRange" layoutX="516.0" layoutY="490.0" prefHeight="25.0" prefWidth="74.0" />
+      <Label layoutX="524.0" layoutY="531.0" prefHeight="17.0" prefWidth="56.0" text="MidRange" />
+      <TextField fx:id="mediane" layoutX="622.0" layoutY="490.0" prefHeight="25.0" prefWidth="74.0" />
+      <Label layoutX="631.0" layoutY="531.0" prefHeight="17.0" prefWidth="56.0" text="Mediane" />
+      <TextField fx:id="symetrie" layoutX="725.0" layoutY="490.0" prefHeight="25.0" prefWidth="74.0" />
+      <Label layoutX="734.0" layoutY="531.0" prefHeight="17.0" prefWidth="56.0" text="Symetrie" />
    </children>
 </Pane>
