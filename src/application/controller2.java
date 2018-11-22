@@ -27,8 +27,11 @@ public class controller2 {
 	@FXML
 	TextField minSup;
 	int minS = 0;
+	@FXML
+	TextField confMin;
+	double minConf = 0.0;
 	
-	public void tableData(int minS) throws IOException {
+	public void tableData(int minS, double minConf) throws IOException {
 		
 		 dataItemFreq= FXCollections.observableArrayList();
 		 dataRules= FXCollections.observableArrayList();
@@ -61,7 +64,7 @@ public class controller2 {
 		
 		new Thread(()->{
 			try {
-				Apriori.representation(this, minS);
+				Apriori.representation(this, minS, minConf);
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -86,8 +89,14 @@ public class controller2 {
 		minSup.textProperty().addListener((observable, oldValue, newValue) -> {
 		minS = Integer.valueOf(minSup.getText());
 		});
+		
+		confMin.textProperty().addListener((observable, oldValue, newValue) -> {
+		minConf = Integer.valueOf(confMin.getText());
+		});
+		
 		System.out.println("min Suppppppp == "+minSup.getText());
-		tableData(Integer.valueOf(minSup.getText()));
+		System.out.println("conf miiiiiin == "+confMin.getText());
+		tableData(Integer.valueOf(minSup.getText()), Double.valueOf(confMin.getText()));
 	
 	}
 

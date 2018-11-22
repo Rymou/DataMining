@@ -33,7 +33,7 @@ public class principal implements Initializable{
               // launch(controller.class);
             	//faire appel a lautre interface
 				System.out.println("noooo");
-				FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("fich.fxml"));
+				FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("partie1.fxml"));
 				Parent root1 = (Parent) fxmlLoader.load();
 				Scene scene = new Scene(root1);
 				Stage stage = new Stage(StageStyle.DECORATED);
@@ -47,7 +47,7 @@ public class principal implements Initializable{
               // launch(controller.class);
             	//faire appel a lautre interface
 				System.out.println("yees");
-				FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("fich2.fxml"));
+				FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("partie2.fxml"));
 				Parent root1 = (Parent) fxmlLoader.load();
 				Scene scene = new Scene(root1);
 				Stage stage = new Stage(StageStyle.DECORATED);

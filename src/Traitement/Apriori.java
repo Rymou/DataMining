@@ -9,18 +9,22 @@ import application.controller2;
 
 public class Apriori {
 	static char[] _charset;
-	static 	ArrayList<String> rules = new ArrayList<String>();
+	
 	static ArrayList<ArrayList<String>> transactions = new ArrayList<ArrayList<String>>();
 	static ArrayList<ArrayList<String>> _transactions = new ArrayList<ArrayList<String>>();
+	static ArrayList<ArrayList<String>> _transactionsGlobale = new ArrayList<ArrayList<String>>();
+
 	static ArrayList<ArrayList<String>> prevItemSetsWithMinSupportCount = new ArrayList<ArrayList<String>>();
+	static int confiance = 1;
 	
-	public static void representation(controller2 control, int minSupportCount) throws IOException {
+	public static void representation(controller2 control, int minSupportCount, double minConf) throws IOException {
 		System.out.println("min sup == "+minSupportCount);
 		
 
+
 		String ligne;
 		String[] item;
-		InputStream ips=new FileInputStream("C:\\Users\\USER\\Documents\\Master2\\DataMining\\try.txt"); 
+		InputStream ips=new FileInputStream("C:\\Users\\USER\\Documents\\Master2\\DataMining\\car_data.txt"); 
 		InputStreamReader ipsr=new InputStreamReader(ips);
 		BufferedReader br=new BufferedReader(ipsr);
 		
@@ -32,6 +36,7 @@ public class Apriori {
 				transaction.add(item[j]);
 			transactions.add(transaction);
 			_transactions.add(transaction);
+			_transactionsGlobale.add(transaction);
 		}
 		
 				
@@ -62,28 +67,29 @@ public class Apriori {
 			ArrayList<ArrayList<String>> itemSetsWithMinSupportCount = getItemSetsWithMinSupportCount(itemSets, supportCountList, minSupportCount);
 
 			// Sortie, avec aucun itemSet dont le support est >= minSup
+			int k=0;
 			if (itemSetsWithMinSupportCount.size() == 0) {
 				System.out.print("Les itemSet les plus fréquents sont:  ");
-				//System.out.println(prevItemSetsWithMinSupportCount);
+				System.out.println(prevItemSetsWithMinSupportCount);
 				
 				for(int i=0; i<prevItemSetsWithMinSupportCount.size(); i++) {
 					String itemu = "";
+
 					//System.out.println(prevItemSetsWithMinSupportCount.get(i).toString());
 					for(int j=0; j<prevItemSetsWithMinSupportCount.get(i).size(); j++) {
 						//System.out.print(prevItemSetsWithMinSupportCount.get(i).get(j));
+						
+						
 						itemu = itemu + prevItemSetsWithMinSupportCount.get(i).get(j)+". ";
 					}
+					
 					control.dataItemFreq.add(new FreqItemSet(Integer.toString(i+1), itemu));
-					System.out.println(itemu);
+					//if(k<supportCountList.size()) {
+						
+				
 				}
-				
-			/*for(int i=0; i<apriori.rules.size(); i++) {
-				dataItemFreq.add(new FreqItemSet(Integer.toString(i+1), apriori.rules.get(i)));
-				System.out.println(apriori.rules.get(i));
-			}*/
-			
-				
-				rulesAssociations(control, prevItemSetsWithMinSupportCount);
+				//rulesAssociations(control, prevItemSetsWithMinSupportCount);
+				associationRules(control, prevItemSetsWithMinSupportCount, minConf);
 
 				break;
 			}
@@ -92,6 +98,40 @@ public class Apriori {
 
 			prevItemSetsWithMinSupportCount = itemSetsWithMinSupportCount;
 		}
+	}
+	
+	public static double calculateConf(ArrayList<ArrayList<String>> transactions, ArrayList<String> gauche, ArrayList<String> droit) {
+		double conf = 0.0;
+		int count1 = 0, count2 = 0;
+		String pG="", pD="";
+		
+		for(ArrayList<String> transaction : transactions) {
+			if(existsInTransaction(gauche, transaction)) count1++;
+		}
+		ArrayList<String> newAll = new ArrayList<String>();
+		for(int i=0; i<gauche.size(); i++) {
+			newAll.add(gauche.get(i));
+		}
+		for(int i=0; i<droit.size(); i++) {
+			newAll.add(droit.get(i));
+		}
+		
+		for(ArrayList<String> transaction : transactions) {
+			if(existsInTransaction(newAll, transaction)) count2++;
+		}
+		
+		conf =(double)(count2)/(double)(count1);		
+		for(String s: gauche) {
+			pG += s;
+		}
+		for(String s: newAll) {
+			pD += s;
+		}
+		//System.out.println("partie gauche == "+pG+" == "+count1);
+		//System.out.println("partie droite == "+pD+" == "+count2);
+		//System.out.println("confiance == "+conf);
+		
+		return conf;
 	}
 
 
@@ -183,12 +223,6 @@ public class Apriori {
 				System.out.println(itemSets.get(i)+" : Support = "+c);
 			}
 		}
-		
-		/*System.out.println("Itemset");
-		for(int i=0; i<toReturn.size(); i++) {
-			System.out.println(toReturn.get(i));
-		}*/
-
 		return toReturn;
 	}
 	
@@ -217,54 +251,186 @@ public class Apriori {
 	    return result;
 	}
 	
-	public static void rulesAssociations(controller2 control, ArrayList<ArrayList<String>> itemSets) {
-		System.out.println("Les règles d'associations sont :");
-		int[] partieGauche;
-		int[] partieDroite;
+	
+	public static void associationRules(controller2 control, ArrayList<ArrayList<String>> itemSets, double confianceMin) {
+		ArrayList<ArrayList<String>> subSet = new ArrayList<ArrayList<String>>();
+		ArrayList<ArrayList<ArrayList<String>>> allSubSet = new ArrayList<ArrayList<ArrayList<String>>>();
 		for(int i=0; i<itemSets.size(); i++) {
-			//ArrayList<String> r = new ArrayList<String>();
-			//System.out.print("Règle : ");
-			String itemGauche = "";
-			int c = 1;
-			partieGauche = new int[10];
-			partieDroite = new int[10];
+			
+			int p = 0;
+			int n = itemSets.get(i).size();
+			for (int j = 0; j < (1<<n); j++) 
+		     { 
+				
+				ArrayList<String> subSubSet = new ArrayList<String>();
+		            System.out.print("{ "); 
+		            // Print current subset 
+		            if(p!=0) {
+		            for (int k = 0; k < n; k++) {
+		            	if ((j & (1 << k)) > 0 ) {
+		            		 subSubSet.add(itemSets.get(i).get(k));
+		            		 System.out.println(itemSets.get(i).get(k)+" ");	 
+		            	}
+		            	
+		            	
+		            }
+		            
+			            subSet.add(subSubSet);
+			            System.out.print(" }");
+		            }
+		            p++;
 
-			for(int j=0; j<itemSets.get(i).size(); j++) {
-				String item1 = itemSets.get(i).get(j);
-				String temp = "";
-				
-				
-				for(int k=0; k<itemSets.get(i).size(); k++) {
-					if(k!=j) {
-						temp = temp + " " + itemSets.get(i).get(k);
-						//System.out.println(item1+" ==> "+itemSets.get(i).get(k));
-						rules.add(item1+" ==> "+itemSets.get(i).get(k));
-					}
-					
-				
-				}
-				rules.add(item1+" ==> "+temp);
-				itemGauche = itemGauche + itemSets.get(i).get(j) + " ";
-				String itemDroit = "";
-				//System.out.println(itemGauche);
-				for(int k1=j+c; k1<itemSets.get(i).size(); k1++) {
-					itemDroit = itemDroit + itemSets.get(i).get(k1) + " ";
-					//System.out.println("itemDroit = "+itemDroit);
-					//c++;
-				}
-				//c++;
-				if(j<itemSets.get(i).size()-1) {
-					//System.out.println(itemGauche+" ==> "+itemDroit);
-					//rules.add(itemGauche+" ==> "+itemDroit);
-				}
-				
-				}
+		     }
+			allSubSet.add(subSet);
+			
+		}
+		System.out.println();
+		for(int i=0; i<subSet.size(); i++) {
+			for(int j=0; j<subSet.get(i).size(); j++) {
+				System.out.print(subSet.get(i).get(j)+ " ");
 			}
+			
+			System.out.println();
+		}
+		System.out.println("bismi Allaah");
+		ArrayList<String> rulesWithConf = new ArrayList<String>();
+		ArrayList<String> rules = new ArrayList<String>();
+		ArrayList<String> gauche = new ArrayList<String>();
+		ArrayList<String> droit = new ArrayList<String>();;
+		for(int i=0; i<allSubSet.size(); i++) {
+			System.out.println("Taille allSubSet == "+allSubSet.size());
+			//int k=0; 
+			for(int j=0; j<allSubSet.get(i).size(); j++) {
+				System.out.println("Workiing .. ");
+				gauche = allSubSet.get(i).get(j);
+				for(int k = 0; k<allSubSet.get(i).size(); k++) {
+					droit = allSubSet.get(i).get(k);
+					if(k!=j) {
+						if(!existeInSubSet(gauche, droit)) {
+							double conf = calculateConf(_transactions, gauche, droit);
+							if(conf>=confianceMin) {
+								String rule = "";
+								String rulesWithC = "";
+								for(int k1=0; k1<gauche.size(); k1++) {
+									rule = rule + " " + gauche.get(k1);
+									rulesWithC = rulesWithC + " " + gauche.get(k1);
+								}
+								rule = rule + " ==> ";
+								rulesWithC = rulesWithC + " ==> ";
+								for(int k2=0; k2<droit.size(); k2++) {
+									rule = rule + " " + droit.get(k2);
+									rulesWithC = rulesWithC + " " + droit.get(k2);
+
+								}
+								rulesWithC = rulesWithC + " conf = "+Double.toString(conf);
+								rules.add(rule);
+								rulesWithConf.add(rulesWithC);
+							}
+						}
+					}
+				}
+				
+			}
+		}
+		System.out.println("taille de rulesWithConf == "+rulesWithConf.size());
+		System.out.println("taille de rules == "+rules.size());
+		System.out.println("rules with conf");
+		for(int i=0; i<rulesWithConf.size(); i++) {
+			System.out.println(rulesWithConf.get(i));
+		}
 		
 		for(int i=0; i<rules.size(); i++) {
-			System.out.println(rules.get(i));
 			control.dataRules.add(new rules(Integer.toString(i+1), rules.get(i)));
 		}
 		
+		
+		
+		/*System.out.println("començatoooooooooo");
+		for(int i=0; i<subSet.size()-1; i++) {
+			ArrayList<String> gauche = new ArrayList<String>();
+			ArrayList<String> droit = new ArrayList<String>();;
+			gauche = subSet.get(i);
+			droit = subSet.get(i+1);
+			//if(!existeInSubSet(gauche, droit)) {
+				for(int k1=0; k1<gauche.size(); k1++) {
+					System.out.print(gauche.get(k1)+" ");
+				}
+				System.out.println();
+				for(int k1=0; k1<droit.size(); k1++) {
+					System.out.print(droit.get(k1)+" ");
+				}
+				System.out.println();
+				
+			//}
+			
+			System.out.println();
+		}
+		
+		System.out.println("taille de subSet == "+subSet.size());
+		ArrayList<String> rules = new ArrayList<String>();
+		*/
+		/*
+		 for(int i=0; i<subSet.size(); i++) {
+			// System.out.println("dkhalt");
+			// int reboucle = 0;
+			 ArrayList<String> gauche = new ArrayList<String>();
+			 ArrayList<String> droit = null;
+			 
+			 for(int reboucle = 0; reboucle<subSet.get(i).size(); reboucle++) {
+				 double conf = 0;
+				 gauche = subSet.get(reboucle);
+				// int j = 0;
+				 for(int j=0; j<subSet.get(i).size(); j++) {
+					 //System.out.print(subSet.get(i).get(j)+ " ");
+					 if(j!=reboucle) {
+				         droit = new ArrayList<String>();
+				         droit = subSet.get(j); 
+				         if(!existeInSubSet(gauche, droit)) {
+				         
+				         
+							 conf = calculateConf(_transactions, gauche , droit);
+							 for(int k1=0; k1<gauche.size(); k1++) {
+								 System.out.print(gauche.get(k1));
+							 }
+							 System.out.print(" ==> ");
+							 for(int k1=0; k1<droit.size(); k1++) {
+								 System.out.print(droit.get(k1));
+							 }
+							 System.out.print(" confiance == "+conf);
+							 System.out.println();
+							 //j++;
+				         }
+				        
+					 }
+				 }
+			 
+			 }
+			 
+			
+		 }
+		 */
 	}
+	
+	public static boolean existeInSubSet(ArrayList<String> gauche, ArrayList<String> droit) {
+		for (int i=0; i<gauche.size(); i++) {
+			int j=0;
+			while(j<droit.size()) {
+				if(gauche.get(i).equals(droit.get(j)))
+					return true;
+				j++;
+			}
+		}
+		return false;
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 }
