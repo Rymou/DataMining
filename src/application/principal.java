@@ -17,8 +17,6 @@ import javafx.stage.StageStyle;
 public class principal implements Initializable{
 	
 	@FXML
-	Button partie2;
-	@FXML
 	Button partie1;
 
 	@Override
@@ -33,27 +31,13 @@ public class principal implements Initializable{
               // launch(controller.class);
             	//faire appel a lautre interface
 				System.out.println("noooo");
-				FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("partie1.fxml"));
+				FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("uiWithTabs.fxml"));
 				Parent root1 = (Parent) fxmlLoader.load();
 				Scene scene = new Scene(root1);
 				Stage stage = new Stage(StageStyle.DECORATED);
 				stage.setScene(scene);  
 				stage.show();
 	}
-	
-	public void buttonPart2(ActionEvent event) throws IOException{
-		//System.out.println("gaguaaaaa");
-		
-              // launch(controller.class);
-            	//faire appel a lautre interface
-				System.out.println("yees");
-				FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("partie2.fxml"));
-				Parent root1 = (Parent) fxmlLoader.load();
-				Scene scene = new Scene(root1);
-				Stage stage = new Stage(StageStyle.DECORATED);
-				stage.setScene(scene);  
-				stage.show();
-	}   
 	
 
 }

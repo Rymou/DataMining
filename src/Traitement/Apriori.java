@@ -2,10 +2,11 @@ package Traitement;
 
 import java.io.*;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import application.FreqItemSet;
+import application.controller1;
 import application.rules;
-import application.controller2;
 
 public class Apriori {
 	static char[] _charset;
@@ -17,23 +18,28 @@ public class Apriori {
 	static ArrayList<ArrayList<String>> prevItemSetsWithMinSupportCount = new ArrayList<ArrayList<String>>();
 	static int confiance = 1;
 	
-	public static void representation(controller2 control, int minSupportCount, double minConf) throws IOException {
+	public static void representation(controller1 control,String path, int minSupportCount, double minConf) throws IOException {
 		System.out.println("min sup == "+minSupportCount);
 		
 
 
 		String ligne;
 		String[] item;
-		InputStream ips=new FileInputStream("C:\\Users\\USER\\Documents\\Master2\\DataMining\\car_data.txt"); 
+		InputStream ips=new FileInputStream(path); 
 		InputStreamReader ipsr=new InputStreamReader(ips);
 		BufferedReader br=new BufferedReader(ipsr);
 		
-		while(!(ligne=br.readLine()).equals("%")){
-		
+		while((ligne=br.readLine())!= null){
+			int numAttr = 1;
 			ArrayList<String> transaction = new ArrayList<String>();
-			item = ligne.split("\\s+");
-			for (int j = 0; j < item.length; j++) 
-				transaction.add(item[j]);
+			item = ligne.split(",");
+			//int numAttrMax = item.length;
+			for (int j = 0; j < item.length; j++) {
+				String s = Integer.toString(numAttr)+":"+item[j];
+				
+				transaction.add(s);
+				numAttr++;
+			}
 			transactions.add(transaction);
 			_transactions.add(transaction);
 			_transactionsGlobale.add(transaction);
@@ -252,7 +258,7 @@ public class Apriori {
 	}
 	
 	
-	public static void associationRules(controller2 control, ArrayList<ArrayList<String>> itemSets, double confianceMin) {
+	public static void associationRules(controller1 control, ArrayList<ArrayList<String>> itemSets, double confianceMin) {
 		ArrayList<ArrayList<String>> subSet = new ArrayList<ArrayList<String>>();
 		ArrayList<ArrayList<ArrayList<String>>> allSubSet = new ArrayList<ArrayList<ArrayList<String>>>();
 		for(int i=0; i<itemSets.size(); i++) {
@@ -263,20 +269,20 @@ public class Apriori {
 		     { 
 				
 				ArrayList<String> subSubSet = new ArrayList<String>();
-		            System.out.print("{ "); 
+		           // System.out.print("{ "); 
 		            // Print current subset 
 		            if(p!=0) {
 		            for (int k = 0; k < n; k++) {
 		            	if ((j & (1 << k)) > 0 ) {
 		            		 subSubSet.add(itemSets.get(i).get(k));
-		            		 System.out.println(itemSets.get(i).get(k)+" ");	 
+		            		 //System.out.println(itemSets.get(i).get(k)+" ");	 
 		            	}
 		            	
 		            	
 		            }
 		            
 			            subSet.add(subSubSet);
-			            System.out.print(" }");
+			           // System.out.print(" }");
 		            }
 		            p++;
 
@@ -284,24 +290,27 @@ public class Apriori {
 			allSubSet.add(subSet);
 			
 		}
-		System.out.println();
-		for(int i=0; i<subSet.size(); i++) {
-			for(int j=0; j<subSet.get(i).size(); j++) {
-				System.out.print(subSet.get(i).get(j)+ " ");
-			}
+		//System.out.println();
+		//for(int i=0; i<subSet.size(); i++) {
+			//for(int j=0; j<subSet.get(i).size(); j++) {
+				//System.out.print(subSet.get(i).get(j)+ " ");
+			//}
 			
-			System.out.println();
-		}
-		System.out.println("bismi Allaah");
+			//System.out.println();
+		//}
+		System.out.println("haya bina");
 		ArrayList<String> rulesWithConf = new ArrayList<String>();
 		ArrayList<String> rules = new ArrayList<String>();
 		ArrayList<String> gauche = new ArrayList<String>();
 		ArrayList<String> droit = new ArrayList<String>();;
+		
+		
+		
 		for(int i=0; i<allSubSet.size(); i++) {
-			System.out.println("Taille allSubSet == "+allSubSet.size());
+			//System.out.println("Taille allSubSet == "+allSubSet.size());
 			//int k=0; 
 			for(int j=0; j<allSubSet.get(i).size(); j++) {
-				System.out.println("Workiing .. ");
+				//System.out.println("Workiing .. ");
 				gauche = allSubSet.get(i).get(j);
 				for(int k = 0; k<allSubSet.get(i).size(); k++) {
 					droit = allSubSet.get(i).get(k);
@@ -332,83 +341,19 @@ public class Apriori {
 				
 			}
 		}
-		System.out.println("taille de rulesWithConf == "+rulesWithConf.size());
-		System.out.println("taille de rules == "+rules.size());
-		System.out.println("rules with conf");
+		List<String> setC = new ArrayList<String>();
 		for(int i=0; i<rulesWithConf.size(); i++) {
-			System.out.println(rulesWithConf.get(i));
+			setC.add(rulesWithConf.get(i));
+			//System.out.println(rulesWithConf.get(i));
 		}
-		
-		for(int i=0; i<rules.size(); i++) {
-			control.dataRules.add(new rules(Integer.toString(i+1), rules.get(i)));
+		int i =0;
+		Set<String> setList = setC.stream().collect(Collectors.toSet());
+		for(Iterator<String> iter = setList.iterator(); iter.hasNext();) {
+			String a = iter.next();
+			control.dataRules.add(new rules(Integer.toString(i+1), a));
+			i++;
 		}
-		
-		
-		
-		/*System.out.println("començatoooooooooo");
-		for(int i=0; i<subSet.size()-1; i++) {
-			ArrayList<String> gauche = new ArrayList<String>();
-			ArrayList<String> droit = new ArrayList<String>();;
-			gauche = subSet.get(i);
-			droit = subSet.get(i+1);
-			//if(!existeInSubSet(gauche, droit)) {
-				for(int k1=0; k1<gauche.size(); k1++) {
-					System.out.print(gauche.get(k1)+" ");
-				}
-				System.out.println();
-				for(int k1=0; k1<droit.size(); k1++) {
-					System.out.print(droit.get(k1)+" ");
-				}
-				System.out.println();
-				
-			//}
-			
-			System.out.println();
-		}
-		
-		System.out.println("taille de subSet == "+subSet.size());
-		ArrayList<String> rules = new ArrayList<String>();
-		*/
-		/*
-		 for(int i=0; i<subSet.size(); i++) {
-			// System.out.println("dkhalt");
-			// int reboucle = 0;
-			 ArrayList<String> gauche = new ArrayList<String>();
-			 ArrayList<String> droit = null;
-			 
-			 for(int reboucle = 0; reboucle<subSet.get(i).size(); reboucle++) {
-				 double conf = 0;
-				 gauche = subSet.get(reboucle);
-				// int j = 0;
-				 for(int j=0; j<subSet.get(i).size(); j++) {
-					 //System.out.print(subSet.get(i).get(j)+ " ");
-					 if(j!=reboucle) {
-				         droit = new ArrayList<String>();
-				         droit = subSet.get(j); 
-				         if(!existeInSubSet(gauche, droit)) {
-				         
-				         
-							 conf = calculateConf(_transactions, gauche , droit);
-							 for(int k1=0; k1<gauche.size(); k1++) {
-								 System.out.print(gauche.get(k1));
-							 }
-							 System.out.print(" ==> ");
-							 for(int k1=0; k1<droit.size(); k1++) {
-								 System.out.print(droit.get(k1));
-							 }
-							 System.out.print(" confiance == "+conf);
-							 System.out.println();
-							 //j++;
-				         }
-				        
-					 }
-				 }
-			 
-			 }
-			 
-			
-		 }
-		 */
+
 	}
 	
 	public static boolean existeInSubSet(ArrayList<String> gauche, ArrayList<String> droit) {

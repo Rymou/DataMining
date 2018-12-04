@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.text.*?>
+<?import javafx.scene.chart.*?>
+<?import javafx.scene.control.*?>
+<?import java.lang.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.layout.BorderPane?>
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="559.0" prefWidth="1196.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.controller1">
+   <children>
+      <TabPane layoutX="187.0" layoutY="62.0" prefHeight="559.0" prefWidth="1196.0" tabClosingPolicy="UNAVAILABLE" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+        <tabs>
+          <Tab text="Partie 1">
+               <content>
+                  <Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="562.0" prefWidth="1191.0">
+                     <children>
+                        <Button fx:id="ouvrir" layoutX="1009.0" layoutY="40.0" mnemonicParsing="false" onAction="#Boutton1Action" prefHeight="25.0" prefWidth="111.0" text="Ouvrir" />
+                        <TableView fx:id="tableInstance" layoutX="28.0" layoutY="95.0" prefHeight="371.0" prefWidth="351.0" />
+                        <TextField fx:id="textF" layoutX="516.0" layoutY="35.0" prefHeight="36.0" prefWidth="441.0" />
+                        <Label layoutX="417.0" layoutY="95.0" prefHeight="25.0" prefWidth="127.0" text="Nombre d'attributs : " />
+                        <Label layoutX="417.0" layoutY="139.0" prefHeight="25.0" prefWidth="119.0" text="Nombre d'instances : " />
+                        <Label fx:id="nbrAttr" layoutX="530.0" layoutY="95.0" prefHeight="25.0" prefWidth="55.0" />
+                        <Label fx:id="nbrInst" layoutX="536.0" layoutY="139.0" prefHeight="25.0" prefWidth="55.0" />
+                        <Label layoutX="417.0" layoutY="184.0" prefHeight="25.0" prefWidth="74.0" text="Relation : " />
+                        <Label fx:id="relation" layoutX="473.0" layoutY="187.0" prefHeight="19.0" prefWidth="127.0" />
+                        <TableView fx:id="tableAttributes" layoutX="417.0" layoutY="223.0" prefHeight="242.0" prefWidth="248.0" />
+                        <TextField fx:id="Bmax" layoutX="66.0" layoutY="490.0" prefHeight="25.0" prefWidth="56.0" />
+                        <TextField fx:id="Bmin" layoutX="133.0" layoutY="490.0" prefHeight="25.0" prefWidth="56.0" />
+                        <TextField fx:id="Bmean" layoutX="204.0" layoutY="490.0" prefHeight="25.0" prefWidth="56.0" />
+                        <TextField fx:id="Bq1" layoutX="271.0" layoutY="490.0" prefHeight="25.0" prefWidth="56.0" />
+                        <TextField fx:id="Bq3" layoutX="343.0" layoutY="490.0" prefHeight="25.0" prefWidth="56.0" />
+                        <Label fx:id="max" layoutX="81.0" layoutY="531.0" text="Max" />
+                        <Label fx:id="q3" layoutX="363.0" layoutY="531.0" text="Q3" />
+                        <Label fx:id="q1" layoutX="291.0" layoutY="531.0" text="Q1" />
+                        <Label fx:id="mean" layoutX="206.0" layoutY="531.0" prefHeight="17.0" prefWidth="56.0" text="Moyenne" />
+                        <Label fx:id="min" layoutX="147.0" layoutY="531.0" text="Min" />
+                        <ChoiceBox fx:id="AttChooser" layoutX="837.0" layoutY="490.0" onAction="#choice" prefWidth="150.0" />
+                        <BarChart fx:id="barChart" layoutX="696.0" layoutY="81.0">
+                          <xAxis>
+                            <CategoryAxis side="BOTTOM" />
+                          </xAxis>
+                          <yAxis>
+                            <NumberAxis side="LEFT" />
+                          </yAxis>
+                        </BarChart>
+                        <Button fx:id="boiteAMous" layoutX="334.0" layoutY="40.0" mnemonicParsing="false" onAction="#BouttonActionBoiteAMous" prefHeight="25.0" prefWidth="166.0" text="Boites à moustaches" />
+                        <TextField fx:id="mode" layoutX="417.0" layoutY="490.0" prefHeight="25.0" prefWidth="74.0" />
+                        <Label layoutX="434.0" layoutY="531.0" prefHeight="17.0" prefWidth="41.0" text="Mode" />
+                        <ComboBox fx:id="filtres" layoutX="64.0" layoutY="40.0" prefHeight="25.0" prefWidth="224.0" />
+                        <TextField fx:id="midRange" layoutX="516.0" layoutY="490.0" prefHeight="25.0" prefWidth="74.0" />
+                        <Label layoutX="524.0" layoutY="531.0" prefHeight="17.0" prefWidth="56.0" text="MidRange" />
+                        <TextField fx:id="mediane" layoutX="622.0" layoutY="490.0" prefHeight="25.0" prefWidth="74.0" />
+                        <Label layoutX="631.0" layoutY="531.0" prefHeight="17.0" prefWidth="56.0" text="Mediane" />
+                        <TextField fx:id="symetrie" layoutX="725.0" layoutY="490.0" prefHeight="25.0" prefWidth="74.0" />
+                        <Label layoutX="734.0" layoutY="531.0" prefHeight="17.0" prefWidth="56.0" text="Symetrie" />
+                     </children>
+                  </Pane>
+               </content>
+          </Tab>
+          <Tab text="Partie 2">
+               <content>
+                  <Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="559.0" prefWidth="1196.0">
+                     <children>
+                        <TableView fx:id="tableFreqItems" layoutX="87.0" layoutY="153.0" prefHeight="304.0" prefWidth="337.0" />
+                        <Label layoutX="77.0" layoutY="109.0" prefHeight="32.0" prefWidth="190.0" text="Les items set les plus fréquents:">
+                           <font>
+                              <Font name="System Bold Italic" size="12.0" />
+                           </font>
+                        </Label>
+                        <Label layoutX="392.0" layoutY="109.0" prefHeight="32.0" prefWidth="190.0" text="Les règles d'associations:">
+                           <font>
+                              <Font name="System Bold Italic" size="12.0" />
+                           </font>
+                        </Label>
+                        <TableView fx:id="tableRulesAssociation" layoutX="477.0" layoutY="153.0" prefHeight="304.0" prefWidth="333.0" />
+                        <Label layoutX="14.0" layoutY="14.0" prefHeight="27.0" prefWidth="190.0" text="Algorithme Apriori">
+                           <font>
+                              <Font name="System Bold Italic" size="18.0" />
+                           </font>
+                        </Label>
+                        <Button fx:id="start" layoutX="380.0" layoutY="478.0" mnemonicParsing="false" onAction="#Boutton2Action" prefHeight="25.0" prefWidth="156.0" text="Commencer le traitement" />
+                        <Label layoutX="248.0" layoutY="42.0" prefHeight="25.0" prefWidth="220.0" text="Veuillez introduire le support minimum " />
+                        <TextField fx:id="minSup" layoutX="490.0" layoutY="38.0" prefHeight="32.0" prefWidth="91.0" />
+                        <TextField fx:id="confMin" layoutX="490.0" layoutY="77.0" prefHeight="32.0" prefWidth="91.0" />
+                        <Label layoutX="248.0" layoutY="81.0" prefHeight="25.0" prefWidth="229.0" text="Veuillez introduire la confiance minimale " />
+                     </children>
+                  </Pane>
+               </content>
+          </Tab>
+        </tabs>
+      </TabPane>
+   </children>
+</AnchorPane>

@@ -1,6 +1,10 @@
 package application;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URL;
 import java.text.DecimalFormat;
@@ -18,6 +22,7 @@ import java.util.Vector;
 
 import org.jfree.ui.RefineryUtilities;
 
+import Traitement.Apriori;
 import javafx.application.Platform;
 import javafx.beans.binding.StringExpression;
 import javafx.beans.property.ReadOnlyStringWrapper;
@@ -89,6 +94,24 @@ public class controller1 implements Initializable{
 	public static LinkedList<LinkedList<String>> linkedList;
 	static int filtreChoix;
 	
+	
+	
+	@FXML
+	TableView<FreqItemSet> tableFreqItems;
+	public ObservableList<FreqItemSet> dataItemFreq;
+	@FXML
+	TableView<rules> tableRulesAssociation;
+	public ObservableList<rules> dataRules;
+	@FXML
+	Button start;
+	@FXML
+	TextField minSup;
+	int minS = 0;
+	@FXML
+	TextField confMin;
+	double minConf = 0.0;
+	
+
 
 	
 	@Override
@@ -430,6 +453,8 @@ List<Double> l = new LinkedList<Double>();
 	
 	
 	public void tableData(String path) throws Exception {
+		
+		
 		tableAttributes.getColumns().clear();
 		tableInstance.getColumns().clear();
 	
@@ -446,23 +471,31 @@ List<Double> l = new LinkedList<Double>();
 		 linkedList = new LinkedList<LinkedList<String>>();
 		 for(int i=0; i<inst.numAttributes(); i++) {
 			 linkedList.add(new LinkedList<String>());
+			 String ligne="";
 			 for(int j=0; j<inst.numInstances(); j++) {
+				 
 				if((inst.attribute(i).isNumeric())&&(!inst.attribute(i).isDate())) {
 					typeAttribute = 0;
 					String d = df.format(inst.instance(j).value(i));
+
+
 					//System.out.println("DMMMMMMMMM");
 					//System.out.println(d);
 					linkedList.get(i).add(d);
 				}
 				else {
+					
 					typeAttribute = 1;
 					if((inst.attribute(i).isNominal())&&(!inst.attribute(i).isDate()))
 						linkedList.get(i).add(inst.instance(j).stringValue(i));
 
 				}
 			 }
+			
 			//System.out.println(Arrays.asList(linkedList.get(i)));
 		 }
+		 
+		 
 
 		 int cpt = 0;
 		 
@@ -480,13 +513,34 @@ List<Double> l = new LinkedList<Double>();
 		 tableInstance.getColumns().addAll(colonne1, colonne2);
 		 tableInstance.setItems(dataInstance);
 		 
+		 
+		 //Création du fichier
+			File newFile = new File("C:\\Users\\USER\\Documents\\Master2\\DataMining\\dataSet.txt");
+			
+			newFile.createNewFile();
+			
+			FileWriter fileW = new FileWriter(newFile);
+			BufferedWriter bw = new BufferedWriter(fileW);
+			
+			
+			
+			//String path = "C:\\Users\\USER\\Documents\\Master2\\DataMining\\dataSet.txt";
+			
+		 
+		 
+		 
+		 
 
 		 while(cpt<inst.size()) {
 			 
 			dataInstance.add(new instances(Integer.toString(cpt),inst.get(cpt).toString()));
+			bw.write(inst.get(cpt).toString());
+			String newLineChar = System.getProperty("line.separator");
+			bw.write(newLineChar);
 			//System.out.println( inst.get(cpt).toString());
 			cpt++;
 		}
+		 bw.close();
 		
 		tableInstance.setItems(dataInstance);
 		
@@ -523,6 +577,9 @@ List<Double> l = new LinkedList<Double>();
 		tableAttributes.setItems(dataAttribute);
 		
 	}
+	
+	
+	
 	//Seulement pour les attributs nominaux
 	public HashMap<String, Integer> calculateFreqAttributes(int numAttr){
 		HashMap<String, Integer> hashMap = new HashMap<String, Integer>();
@@ -609,5 +666,89 @@ List<Double> l = new LinkedList<Double>();
 		}
 		barChart.getData().add(series);
 	}
+	
+	
+	/***************************************** Partie 2 ****************************************/
+
+	
+	public void tableData(int minS, double minConf) throws IOException {
+		
+		
+		
+				
+				String path = "C:\\Users\\USER\\Documents\\Master2\\DataMining\\dataSet.txt";
+				
+		
+		
+		
+		 dataItemFreq= FXCollections.observableArrayList();
+		 dataRules= FXCollections.observableArrayList();
+
+
+		 
+			
+		TableColumn<FreqItemSet, String> colonne1 = new TableColumn<FreqItemSet,String>("Num");
+		colonne1.setCellValueFactory(new PropertyValueFactory<FreqItemSet, String>("numFreqItem"));
+		TableColumn<FreqItemSet, String> colonne2 = new TableColumn<FreqItemSet, String>("ItemSet");
+		colonne2.setCellValueFactory(new PropertyValueFactory<FreqItemSet, String>("itemSet"));
+		colonne1.setMinWidth(5d);
+		colonne2.setMinWidth(300d);
+		tableFreqItems.getColumns().addAll(colonne1, colonne2);
+		tableFreqItems.setItems(dataItemFreq);		 
+		
+		TableColumn<rules, String> colonne3 = new TableColumn<rules,String>("Num");
+		colonne3.setCellValueFactory(new PropertyValueFactory<rules, String>("numFreqItem"));
+		TableColumn<rules, String> colonne4 = new TableColumn<rules, String>("Rules");
+		colonne4.setCellValueFactory(new PropertyValueFactory<rules, String>("itemSet"));
+		colonne3.setMinWidth(5d);
+		colonne4.setMinWidth(300d);
+		tableRulesAssociation.getColumns().addAll(colonne3, colonne4);
+		tableRulesAssociation.setItems(dataRules);
+		
+	
+		
+		//Apriori apriori = new Apriori();
+		//Apriori.representation(minS);
+		
+		new Thread(()->{
+			try {
+				Apriori.representation(this,path, minS, minConf);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}).start();
+		
+		/*for(int i=0; i<apriori.rules.size(); i++) {
+			dataItemFreq.add(new FreqItemSet(Integer.toString(i+1), apriori.rules.get(i)));
+			System.out.println(apriori.rules.get(i));
+		}*/
+		tableFreqItems.setItems(dataItemFreq);
+
+		tableRulesAssociation.setItems(dataRules);
+		
+
+		
+	}
+	
+	
+	public void Boutton2Action(ActionEvent event) throws Exception {
+
+		
+		minSup.textProperty().addListener((observable, oldValue, newValue) -> {
+		minS = Integer.valueOf(minSup.getText());
+		});
+		
+		confMin.textProperty().addListener((observable, oldValue, newValue) -> {
+		minConf = Integer.valueOf(confMin.getText());
+		});
+		
+		System.out.println("min Suppppppp == "+minSup.getText());
+		System.out.println("conf miiiiiin == "+confMin.getText());
+		tableData(Integer.valueOf(minSup.getText()), Double.valueOf(confMin.getText()));
+	
+	}
 
 }
+
+

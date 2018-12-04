@@ -12,7 +12,7 @@
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.Pane?>
 
-<Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="562.0" prefWidth="1191.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.controller1">
+<Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="559.0" prefWidth="1195.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.controller1">
    <children>
       <Button fx:id="ouvrir" layoutX="1009.0" layoutY="40.0" mnemonicParsing="false" onAction="#Boutton1Action" prefHeight="25.0" prefWidth="111.0" text="Ouvrir" />
       <TableView fx:id="tableInstance" layoutX="28.0" layoutY="95.0" prefHeight="371.0" prefWidth="351.0" />
