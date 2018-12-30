@@ -31,7 +31,7 @@ public class principal implements Initializable{
               // launch(controller.class);
             	//faire appel a lautre interface
 				System.out.println("noooo");
-				FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("uiWithTabs.fxml"));
+				FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("uiTabs.fxml"));
 				Parent root1 = (Parent) fxmlLoader.load();
 				Scene scene = new Scene(root1);
 				Stage stage = new Stage(StageStyle.DECORATED);

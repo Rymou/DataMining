@@ -20,6 +20,11 @@ import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.Vector;
 
+import javax.swing.plaf.synth.SynthSeparatorUI;
+
+import Traitement.Classify;
+import Traitement.DBScan;
+
 import org.jfree.ui.RefineryUtilities;
 
 import Traitement.Apriori;
@@ -66,6 +71,12 @@ public class controller1 implements Initializable{
 	TableView<instances> tableInstance; 
 	ObservableList<instances> dataInstance ;
 	@FXML
+	TableView<FreqItemSet> tableKnn; 
+	public ObservableList<FreqItemSet> dataKnn ;
+	@FXML
+	TableView<FreqItemSet> tableDBScan; 
+	public ObservableList<FreqItemSet> dataDBScan ;
+	@FXML
 	ChoiceBox<String> AttChooser;
 	@FXML
 	ComboBox<String> filtres;
@@ -82,8 +93,12 @@ public class controller1 implements Initializable{
 	@FXML
 	Label nbrAttr, nbrInst, relation;
 	public Instances inst;
+	float rate=0;
 
-	
+	@FXML
+	TextField textFKNN;
+	@FXML
+	TextField textFVoisins;
 	@FXML
 	TextField textF;
 	@FXML
@@ -105,12 +120,34 @@ public class controller1 implements Initializable{
 	@FXML
 	Button start;
 	@FXML
+	Button start2;
+	@FXML
+	Button start3;
+	@FXML
 	TextField minSup;
-	int minS = 0;
+	double minS = 0.0;
+	int minP = 0;
+	double epsilon = 0.0;
 	@FXML
 	TextField confMin;
-	double minConf = 0.0;
+	@FXML
+	TextField textFEps;
+	@FXML
+	TextField textFMinPts;
 	
+	double minConf = 0.0;
+	@FXML
+	public Label accuracy;
+	@FXML
+	public TextArea acc;
+	@FXML
+	public TextArea nbClust;
+	@FXML
+	public TextArea nbBruit;
+	@FXML
+	public TextArea inertieIntra;
+	@FXML
+	public TextArea inertieInter;
 
 
 	
@@ -232,7 +269,7 @@ public class controller1 implements Initializable{
 	
 	public double calQ1(ArrayList<Double> values) {
 
-List<Double> l = new LinkedList<Double>();
+		List<Double> l = new LinkedList<Double>();
 		l.addAll(values);
 		l.sort(Comparator.naturalOrder());
 		//values.sort(Comparator.naturalOrder());
@@ -671,7 +708,7 @@ List<Double> l = new LinkedList<Double>();
 	/***************************************** Partie 2 ****************************************/
 
 	
-	public void tableData(int minS, double minConf) throws IOException {
+	public void tableData(double minS, double minConf) throws IOException {
 		
 		
 		
@@ -709,10 +746,12 @@ List<Double> l = new LinkedList<Double>();
 		
 		//Apriori apriori = new Apriori();
 		//Apriori.representation(minS);
+		System.out.println("minuuus == "+ (int)(minS * Integer.parseInt(nbrInst.getText())));
+		int min = (int)(minS * Integer.parseInt(nbrInst.getText()));
 		
 		new Thread(()->{
 			try {
-				Apriori.representation(this,path, minS, minConf);
+				Apriori.representation(this,path, min, minConf);
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -736,19 +775,141 @@ List<Double> l = new LinkedList<Double>();
 
 		
 		minSup.textProperty().addListener((observable, oldValue, newValue) -> {
-		minS = Integer.valueOf(minSup.getText());
+		minS = Double.valueOf(minSup.getText());
 		});
+		
+		//System.out.println(Double.valueOf(minSup.getText()));
 		
 		confMin.textProperty().addListener((observable, oldValue, newValue) -> {
 		minConf = Integer.valueOf(confMin.getText());
 		});
 		
-		System.out.println("min Suppppppp == "+minSup.getText());
+		System.out.println("min Suppppppp == "+Double.valueOf(minSup.getText()));
 		System.out.println("conf miiiiiin == "+confMin.getText());
-		tableData(Integer.valueOf(minSup.getText()), Double.valueOf(confMin.getText()));
+		tableData(Double.valueOf(minSup.getText()), Double.valueOf(confMin.getText()));
 	
 	}
 
+	/**************************************Partie KNN**********************************************/
+	
+	public void tableKnnData(int nbVoisins, float rate) {
+		
+		String path = "C:\\Users\\USER\\Documents\\Master2\\DataMining\\dataSet.txt";
+		
+
+		
+		 dataKnn= FXCollections.observableArrayList();
+		 
+		 
+
+		TableColumn<FreqItemSet, String> colonne3 = new TableColumn<FreqItemSet,String>("Num");
+		colonne3.setCellValueFactory(new PropertyValueFactory<FreqItemSet, String>("numFreqItem"));
+		TableColumn<FreqItemSet, String> colonne4 = new TableColumn<FreqItemSet, String>("ItemSet");
+		colonne4.setCellValueFactory(new PropertyValueFactory<FreqItemSet, String>("itemSet"));
+		colonne3.setMinWidth(5d);
+		colonne4.setMinWidth(300d);
+		tableKnn.getColumns().addAll(colonne3,colonne4);
+		tableKnn.setItems(dataKnn);	
+		
+		float rate2 = Float.parseFloat(textFKNN.getText());
+		int nbV = Integer.parseInt(textFVoisins.getText());
+		//Double r=0.0;
+		double ra = 0.0;
+		new Thread(()->{
+			try {
+				Classify.splitData((float)rate2, Classify.getData(path));
+				acc.setText(""+Classify.accuracy(nbV, this));
+			//ra = r;
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}).start();
+		//tableFreqItems.setItems(dataItemFreq);
+		
+		tableKnn.setItems(dataKnn);
+		
+	}
+	
+	public void Boutton3Action(ActionEvent event) throws Exception {
+		
+		
+		textFKNN.textProperty().addListener((observable, oldValue, newValue) -> {
+		rate = Float.valueOf(textFKNN.getText());
+		});
+		
+		//System.out.println(Double.valueOf(minSup.getText()));
+		
+		textFVoisins.textProperty().addListener((observable, oldValue, newValue) -> {
+		//minConf = Integer.valueOf(confMin.getText());
+		});
+		
+		System.out.println("rate == "+Double.valueOf(textFKNN.getText()));
+		System.out.println("voisins == "+textFVoisins.getText());
+		tableKnnData(Integer.parseInt(textFVoisins.getText()), Float.parseFloat(textFKNN.getText()));
+	
+	}
+	
+	
+	/*************************************** Partie DB Scan ************************************************/
+	
+	public void tableDBScanData(int minPts, double eps) {
+		String path = "C:\\Users\\USER\\Documents\\Master2\\DataMining\\dataSet.txt";
+
+		
+		 dataDBScan = FXCollections.observableArrayList();
+		 
+		 
+
+		TableColumn<FreqItemSet, String> colonne3 = new TableColumn<FreqItemSet,String>("Num");
+		colonne3.setCellValueFactory(new PropertyValueFactory<FreqItemSet, String>("numFreqItem"));
+		TableColumn<FreqItemSet, String> colonne4 = new TableColumn<FreqItemSet, String>("Cluster");
+		colonne4.setCellValueFactory(new PropertyValueFactory<FreqItemSet, String>("itemSet"));
+		colonne3.setMinWidth(5d);
+		colonne4.setMinWidth(700d);
+		tableDBScan.getColumns().addAll(colonne3,colonne4);
+		tableDBScan.setItems(dataDBScan);	
+		
+		//double eps = Double.parseDouble(textFEps.getText());
+		//int minPts = Integer.parseInt(textFMinPts.getText());
+		System.out.println("minPts == "+minPts);
+		System.out.println("Eps == "+eps);
+		//int minPts = 5;
+		//double eps = 0.2;
+		
+		new Thread(()->{
+			try {
+				Traitement.DBScan.dbScan(minPts, eps, this);
+			//ra = r;
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}).start();
+		
+		tableDBScan.setItems(dataDBScan);
+
+		
+	}
+	
+	public void Boutton4Action(ActionEvent event) throws Exception {
+		
+		textFMinPts.textProperty().addListener((observable, oldValue, newValue) -> {
+			minP = Integer.valueOf(textFMinPts.getText());
+			});
+		
+		textFEps.textProperty().addListener((observable, oldValue, newValue) -> {
+			epsilon = Double.valueOf(textFEps.getText());
+			});
+			
+			
+		
+		System.out.println("Commencement de DB Scan");
+		tableDBScanData(Integer.parseInt(textFMinPts.getText()), Double.parseDouble(textFEps.getText()));
+	
+	}
+
+	
 }
 
 
